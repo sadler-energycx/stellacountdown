@@ -113,12 +113,25 @@
         }
       }
 
+      .stella-image {
+        max-width: 300px;
+        width: 100%;
+        height: auto;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        border: 3px solid rgba(255, 255, 255, 0.3);
+      }
+
       @media (max-width: 480px) {
         .countdown {
           gap: 15px;
         }
         .time-unit {
           min-width: 60px;
+        }
+        .stella-image {
+          max-width: 250px;
         }
       }
     </style>
@@ -130,6 +143,8 @@
         Stella's Pickup Countdown
         <span class="paw">🐾</span>
       </h1>
+
+      <img src="image_from_ios.jpg" alt="Stella" class="stella-image" />
 
       <div id="countdown" class="countdown">
         <div class="time-unit">
