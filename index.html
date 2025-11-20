@@ -169,7 +169,7 @@
       </h1>
 
       <div class="content-wrapper">
-        <video class="stella-video" autoplay loop muted playsinline>
+        <video id="stella-video" class="stella-video" autoplay loop muted playsinline>
           <source src="stella.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
@@ -206,6 +206,45 @@
     </div>
 
     <script>
+      // Video autoplay for Fire TV and other restrictive browsers
+      const video = document.getElementById("stella-video");
+
+      // Function to attempt playing the video
+      function tryPlayVideo() {
+        if (video) {
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                console.log("Video autoplay started successfully");
+              })
+              .catch((error) => {
+                console.log("Autoplay prevented:", error);
+                // Try again after a short delay
+                setTimeout(tryPlayVideo, 500);
+              });
+          }
+        }
+      }
+
+      // Try multiple methods to start video playback
+      // Method 1: On page load
+      window.addEventListener("load", tryPlayVideo);
+
+      // Method 2: On DOMContentLoaded
+      document.addEventListener("DOMContentLoaded", tryPlayVideo);
+
+      // Method 3: When video metadata is loaded
+      if (video) {
+        video.addEventListener("loadedmetadata", tryPlayVideo);
+
+        // Method 4: When video can start playing
+        video.addEventListener("canplay", tryPlayVideo);
+
+        // Method 5: Immediate attempt
+        tryPlayVideo();
+      }
+
       // Target: November 30th, 2025, 12:00 PM Central Time
       // Note: Using 2025 since we're past Nov 30, 2024
       const targetDate = new Date("2025-11-30T12:00:00-06:00");
