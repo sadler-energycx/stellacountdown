@@ -207,42 +207,89 @@
 
     <script>
       // Video autoplay for Fire TV and other restrictive browsers
-      const video = document.getElementById("stella-video");
+      let playAttempted = false;
+      let playSuccessful = false;
 
       // Function to attempt playing the video
       function tryPlayVideo() {
-        if (video) {
-          const playPromise = video.play();
-          if (playPromise !== undefined) {
-            playPromise
-              .then(() => {
-                console.log("Video autoplay started successfully");
-              })
-              .catch((error) => {
-                console.log("Autoplay prevented:", error);
-                // Try again after a short delay
-                setTimeout(tryPlayVideo, 500);
-              });
-          }
+        const video = document.getElementById("stella-video");
+
+        if (!video || playSuccessful) {
+          return;
+        }
+
+        // Only attempt play if video is ready
+        if (video.readyState < 3) {
+          console.log("Video not ready yet, readyState:", video.readyState);
+          return;
+        }
+
+        if (playAttempted) {
+          console.log("Play already attempted, skipping duplicate attempt");
+          return;
+        }
+
+        playAttempted = true;
+        console.log("Attempting to play video...");
+
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log("Video autoplay started successfully");
+              playSuccessful = true;
+            })
+            .catch((error) => {
+              console.log("Autoplay prevented:", error);
+              playAttempted = false; // Reset so we can try again
+              // Try again after a short delay
+              setTimeout(tryPlayVideo, 1000);
+            });
         }
       }
 
-      // Try multiple methods to start video playback
-      // Method 1: On page load
-      window.addEventListener("load", tryPlayVideo);
+      // Wait for DOM to be ready, then set up video event listeners
+      function initVideo() {
+        const video = document.getElementById("stella-video");
 
-      // Method 2: On DOMContentLoaded
-      document.addEventListener("DOMContentLoaded", tryPlayVideo);
+        if (!video) {
+          console.log("Video element not found, retrying...");
+          setTimeout(initVideo, 100);
+          return;
+        }
 
-      // Method 3: When video metadata is loaded
-      if (video) {
-        video.addEventListener("loadedmetadata", tryPlayVideo);
+        console.log("Video element found, setting up listeners");
 
-        // Method 4: When video can start playing
-        video.addEventListener("canplay", tryPlayVideo);
+        // When video metadata is loaded
+        video.addEventListener("loadedmetadata", () => {
+          console.log("Video metadata loaded");
+          tryPlayVideo();
+        });
 
-        // Method 5: Immediate attempt
-        tryPlayVideo();
+        // When video can start playing
+        video.addEventListener("canplay", () => {
+          console.log("Video can play");
+          tryPlayVideo();
+        });
+
+        // When video is fully loaded and can play through
+        video.addEventListener("canplaythrough", () => {
+          console.log("Video can play through");
+          tryPlayVideo();
+        });
+
+        // If video is already ready, try immediately
+        if (video.readyState >= 3) {
+          console.log("Video already ready");
+          tryPlayVideo();
+        }
+      }
+
+      // Start initialization when DOM is ready
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initVideo);
+      } else {
+        initVideo();
       }
 
       // Target: November 30th, 2025, 12:00 PM Central Time
